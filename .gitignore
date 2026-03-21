@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+*.db
+.env
+.DS_Store
+plan.md
+trivia-quiz-api-spec.docx
+CLAUDE.md
