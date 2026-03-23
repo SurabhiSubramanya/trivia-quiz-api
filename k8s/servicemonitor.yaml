@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: trivia-api-monitor
+  namespace: monitoring
+  labels:
+    # Must match the helm install release name exactly
+    release: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - trivia
+  selector:
+    matchLabels:
+      app: trivia-api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trivia-api
+  namespace: trivia
+  labels:
+    app: trivia-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trivia-api
+  template:
+    metadata:
+      labels:
+        app: trivia-api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      initContainers:
+        - name: alembic-migrate
+          image: trivia-quiz-api:latest
+          imagePullPolicy: Never
+          command: ["sh", "-c", "alembic upgrade head"]
+          envFrom:
+            - configMapRef:
+                name: trivia-config
+            - secretRef:
+                name: trivia-secret
+          volumeMounts:
+            - name: db-storage
+              mountPath: /data
+      containers:
+        - name: trivia-api
+          image: trivia-quiz-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: trivia-config
+            - secretRef:
+                name: trivia-secret
+          volumeMounts:
+            - name: db-storage
+              mountPath: /data
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+      volumes:
+        - name: db-storage
+          persistentVolumeClaim:
+            claimName: trivia-db-pvc

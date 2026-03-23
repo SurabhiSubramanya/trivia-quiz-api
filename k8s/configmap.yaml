@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trivia-config
+  namespace: trivia
+data:
+  # 4 slashes = absolute path to the PVC mount point
+  DATABASE_URL: "sqlite:////data/trivia.db"
+  TRIVIA_API_BASE: "https://opentdb.com"
